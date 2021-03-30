@@ -8,6 +8,7 @@ import { FiCalendar, FiClock, FiUser } from 'react-icons/fi';
 import { RichText } from 'prismic-dom';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
+import { useEffect } from 'react';
 import Header from '../../components/Header';
 
 // Service
@@ -42,6 +43,22 @@ interface PostProps {
 export default function Post({ post }: PostProps) {
   const router = useRouter();
 
+  const tempRead = post.data.content.reduce((acc, content) => {
+    const textBody = RichText.asText(content.body)
+      .split(/<.+?>(.+?)<\/.+?>/g)
+      .filter(t => t);
+
+    const ar = [];
+    textBody.forEach(fr => {
+      fr.split(' ').forEach(pl => {
+        ar.push(pl);
+      });
+    });
+
+    const min = Math.ceil(ar.length / 200);
+    return acc + min;
+  }, 0);
+
   if (router.isFallback) {
     return <div>Carregando...</div>;
   }
@@ -74,7 +91,7 @@ export default function Post({ post }: PostProps) {
                 <FiUser /> {post.data.author}
               </div>
               <div>
-                <FiClock /> 4 min
+                <FiClock /> {tempRead} min
               </div>
             </div>
 
@@ -82,6 +99,7 @@ export default function Post({ post }: PostProps) {
               <div key={contentBody.heading}>
                 <strong>{contentBody.heading}</strong>
                 <div
+                  // eslint-disable-next-line react/no-danger
                   dangerouslySetInnerHTML={{
                     __html: RichText.asHtml(contentBody.body),
                   }}
