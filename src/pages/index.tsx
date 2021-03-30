@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { GetStaticProps } from 'next';
 import Head from 'next/head';
 import Link from 'next/link';
@@ -38,6 +39,27 @@ interface HomeProps {
 }
 
 export default function Home({ postsPagination }: HomeProps) {
+  const [posts, setPosts] = useState<Post[]>(postsPagination.results);
+
+  async function getMorePosts() {
+    await fetch(postsPagination.next_page)
+      .then(data => data.json())
+      .then(response => {
+        const postsResponse = response.results.map(post => {
+          return {
+            uid: post.uid,
+            data: {
+              title: post.data.title,
+              subtitle: post.data.subtitle,
+              author: post.data.author,
+            },
+            first_publication_date: post.first_publication_date,
+          };
+        });
+        setPosts([...postsResponse, ...posts]);
+      });
+  }
+
   return (
     <>
       <Head>
@@ -47,7 +69,7 @@ export default function Home({ postsPagination }: HomeProps) {
       <main className={styles.container}>
         <img className={styles.logo} src="/images/logo.svg" alt="logo" />
         <div className={styles.posts}>
-          {postsPagination.results.map(post => (
+          {posts.map(post => (
             <Link key={post.uid} href={`/post/${post.uid}`}>
               <a>
                 <strong>{post.data.title}</strong>
@@ -75,7 +97,11 @@ export default function Home({ postsPagination }: HomeProps) {
           ))}
         </div>
         {postsPagination.next_page && (
-          <button type="button" className={styles.button}>
+          <button
+            onClick={getMorePosts}
+            type="button"
+            className={styles.button}
+          >
             Carregar mais posts
           </button>
         )}

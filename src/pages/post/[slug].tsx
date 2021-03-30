@@ -7,6 +7,7 @@ import ptBR from 'date-fns/locale/pt-BR';
 import { FiCalendar, FiClock, FiUser } from 'react-icons/fi';
 import { RichText } from 'prismic-dom';
 import Head from 'next/head';
+import { useRouter } from 'next/router';
 import Header from '../../components/Header';
 
 // Service
@@ -39,6 +40,12 @@ interface PostProps {
 }
 
 export default function Post({ post }: PostProps) {
+  const router = useRouter();
+
+  if (router.isFallback) {
+    return <div>Carregando...</div>;
+  }
+
   return (
     <>
       <Head>
